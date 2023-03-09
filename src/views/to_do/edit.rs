@@ -13,10 +13,12 @@ use diesel::prelude::*;
 use crate::schema::to_do as td;
 
 pub async fn edit(to_do_item: Json<ToDoItem>, db: DB, token: JwtToken) ->HttpResponse {
-    let results = td::table.filter(td::columns::title.eq(&to_do_item.title));
+    let results = td::table
+        .filter(td::columns::title.eq(&to_do_item.title))
+        .filter(td::columns::user_id.eq(&token.user_id));
     let mut connection = db.connection;
     let _ = diesel::update(results)
         .set(td::columns::status.eq("DONE"))
         .execute(&mut connection);
-    return HttpResponse::Ok().json(ToDoItems::get_state());
+    return HttpResponse::Ok().json(ToDoItems::get_state(token.user_id));
 }

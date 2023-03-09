@@ -7,6 +7,7 @@ use crate::models::user::user::User;
 use crate::schema::users as usr;
 use crate::diesel;
 use diesel::prelude::*;
+use crate::json_serialization::login_response::LoginResponse;
 
 pub async fn login(credentials: web::Json<Login>, db: DB) -> HttpResponse {
     let password = credentials.password.clone();
@@ -23,10 +24,12 @@ pub async fn login(credentials: web::Json<Login>, db: DB) -> HttpResponse {
         true => {
             let token = JwtToken::new(users[0].id);
             let raw_token = token.encode();
-            let mut body = HashMap::new();
-            body.insert("token", raw_token);
-            HttpResponse::Ok().json(body)
+            let response = LoginResponse{token: raw_token.clone()};
+            let mut body = serde_json::to_string(&response).unwrap();
+            HttpResponse::Ok()
+                .append_header(("bearer", raw_token))
+                .json(&body)
         },
-        false => HttpResponse::Unauthorized().await.unwrap()
+        false => HttpResponse::Unauthorized().finish()
     }
 }

@@ -43,11 +43,13 @@ impl ToDoItems {
         };
     }
 
-    pub fn get_state() -> ToDoItems {
+    pub fn get_state(user_id: i32) -> ToDoItems {
         let mut connection = establish_connection();
         let mut array_buffer = Vec::new();
 
-        let items = td::table.order(td::columns::id.asc())
+        let items = td::table
+            .filter(td::columns::user_id.eq(&user_id))
+            .order(td::columns::id.asc())
             .load::<Item>(&mut connection).unwrap();
         for item in items {
             let status = TaskStatus::from_string(item.status.clone());

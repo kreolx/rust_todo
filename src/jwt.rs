@@ -2,17 +2,13 @@ use actix_web::{Error, FromRequest, HttpRequest};
 use actix_web::dev::Payload;
 use actix_web::error::ErrorUnauthorized;
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc, Duration};
-use chrono::serde::ts_seconds;
+use chrono::{DateTime, Utc};
 use crate::config::Config;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JwtToken {
     pub user_id: i32,
-    #[serde(with = "ts_seconds")]
-    pub minted: DateTime<Utc>,
-    #[serde(with = "ts_seconds")]
-    pub exp: DateTime<Utc>,
+    pub exp: usize,
 }
 
 impl JwtToken {
@@ -29,12 +25,15 @@ impl JwtToken {
     }
     pub fn new(user_id: i32) -> Self {
         let timestamp = Utc::now();
-        let exp = timestamp + chrono::Duration::minutes(10);
-        println!("{:#?} exp result is", exp);
+        let config = Config::new();
+        let expired_time = config.map.get("EXPIRE_MINUTES")
+            .unwrap().as_i64().unwrap();
+        let exp = Utc::now().checked_add_signed(chrono::Duration::minutes(expired_time))
+            .expect("valid timestamp")
+            .timestamp();
         return JwtToken {
             user_id,
-            minted: timestamp,
-            exp: timestamp,
+            exp: exp as usize,
         };
     }
     pub fn from_token(token: String) -> Option<Self> {
