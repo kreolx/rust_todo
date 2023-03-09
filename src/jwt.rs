@@ -24,7 +24,6 @@ impl JwtToken {
         return token;
     }
     pub fn new(user_id: i32) -> Self {
-        let timestamp = Utc::now();
         let config = Config::new();
         let expired_time = config.map.get("EXPIRE_MINUTES")
             .unwrap().as_i64().unwrap();
@@ -41,7 +40,6 @@ impl JwtToken {
 
         let token_result = jsonwebtoken::decode::<JwtToken>(&token, &key,
         &jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256));
-        println!("{:#?} token result is", token_result);
         match token_result {
             Ok(data) => {
                 Some(data.claims)

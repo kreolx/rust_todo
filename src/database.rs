@@ -1,7 +1,6 @@
 use actix_web::{Error, FromRequest, HttpRequest};
 use actix_web::dev::Payload;
 use actix_web::error::ErrorServiceUnavailable;
-use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use diesel::{
     r2d2::{Pool, ConnectionManager, PooledConnection}

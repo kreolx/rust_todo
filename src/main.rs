@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer};
+use actix_web::{App, HttpServer, middleware::Logger};
 use actix_web::dev::Service;
 #[macro_use] extern crate diesel;
 
@@ -15,6 +15,8 @@ mod config;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()>{
+    env_logger::init_from_env(env_logger::Env::new()
+        .default_filter_or("info"));
     HttpServer::new(|| {
         let app = App::new()
             .wrap_fn(|req, srv| {
@@ -25,7 +27,8 @@ async fn main() -> std::io::Result<()>{
                     Ok(result)
                 }
             })
-            .configure(views::views_factory);
+            .configure(views::views_factory)
+            .wrap(Logger::new("%a %{User-Agent}i %r %s %D"));
         return app;
     })
         .bind("127.0.0.1:8000")?
