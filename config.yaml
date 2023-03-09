@@ -1,0 +1,2 @@
+DB_URL: postgres://postgres:postgres@192.168.3.6/to_do
+SECRET_KEY: ajflakgialkgljbdsfkJBLSAFKJLABDSFGKJBASDFJKBASDKJFBA
